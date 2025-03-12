@@ -1,6 +1,5 @@
 package com.api.videostreaming.entities;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 

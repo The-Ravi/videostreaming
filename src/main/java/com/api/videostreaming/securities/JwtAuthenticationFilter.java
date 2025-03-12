@@ -69,7 +69,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.warn("ACCESS TOKEN EXPIRED: token: {}, userName: {}", jwtToken, username);
         } catch (Exception e) {
             setResponse(response, HttpServletResponse.SC_UNAUTHORIZED, Constants.UNAUTHORIZED_CODE,Constants.INVALID_JWT_TOKEN);
-            log.warn("INVALID TOKEN]: token: {}, userName: {}", jwtToken, username);
+            log.warn("INVALID TOKEN: token: {}, userName: {}", jwtToken, username);
         }
         
 
@@ -84,7 +84,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
             } else {
                 setResponse(response, HttpServletResponse.SC_UNAUTHORIZED, Constants.UNAUTHORIZED_CODE,Constants.INVALID_JWT_TOKEN);
-                log.warn("INVALID TOKEN]: token: {}, userName: {}", jwtToken, username);
+                log.warn("INVALID TOKEN: token: {}, userName: {}", jwtToken, username);
             }
         }
 

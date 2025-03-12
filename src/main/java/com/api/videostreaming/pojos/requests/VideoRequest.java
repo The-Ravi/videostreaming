@@ -2,7 +2,9 @@ package com.api.videostreaming.pojos.requests;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,13 +13,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class VideoRequest {
-    @NotBlank
+    
+    @NotBlank(message = "Title is required")
     private String title;
-    private String synopsis;
+
+    @NotBlank(message = "Director name is required")
     private String director;
+
+    @NotNull(message = "Cast list cannot be null")
     private List<String> cast;
-    private int yearOfRelease;
-    private String genre;
-    private int runningTime;
+
+    @Valid
+    @NotNull(message = "Metadata is required")
+    private MetadataRequest metadata;
 }
 
