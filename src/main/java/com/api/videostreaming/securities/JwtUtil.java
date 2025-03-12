@@ -22,12 +22,12 @@ import io.jsonwebtoken.SignatureAlgorithm;
 
 
 @Component
-public class JwtSecurity {
+public class JwtUtil {
 
     private final long jwtExpirationTimeInSec;
     private final SecretKey key;
 
-    public JwtSecurity(@Value("${jwtExpirationTimeInSec}") long jwtExpirationTimeInSec, @Value("${jwtSecretKey}") String jwtSecretKey) {
+    public JwtUtil(@Value("${jwtExpirationTimeInSec}") long jwtExpirationTimeInSec, @Value("${jwtSecretKey}") String jwtSecretKey) {
         this.jwtExpirationTimeInSec = jwtExpirationTimeInSec;
         this.key = getSecretKey(jwtSecretKey);
     }

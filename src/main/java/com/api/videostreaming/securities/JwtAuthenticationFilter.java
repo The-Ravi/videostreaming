@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.api.videostreaming.configs.PermittedEndpointsConfig;
+import com.api.videostreaming.pojos.responses.ErrorResponse;
 import com.api.videostreaming.pojos.responses.JwtResponse;
 import com.api.videostreaming.utilities.Constants;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,10 +33,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     private final Gson gson;
-    private final JwtSecurity jsecurity;
-    public JwtAuthenticationFilter(Gson gson, JwtSecurity jsecurity) {
+    private final JwtUtil jwtUtil;
+    public JwtAuthenticationFilter(Gson gson, JwtUtil jwtUtil) {
         this.gson = gson;
-        this.jsecurity = jsecurity;
+        this.jwtUtil = jwtUtil;
     }
     
     @Override
@@ -63,7 +64,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         jwtToken = authorizationHeader.substring(7);
         try {
-            username = jsecurity.getUsernameFromToken(jwtToken);
+            username = jwtUtil.getUsernameFromToken(jwtToken);
         } catch (ExpiredJwtException e) {
             setResponse(response, HttpServletResponse.SC_FORBIDDEN, Constants.EXPIRED_JWT_CODE,Constants.JWT_TOKEN_EXPIRED);
             log.warn("ACCESS TOKEN EXPIRED: token: {}, userName: {}", jwtToken, username);
@@ -76,7 +77,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // validating token
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = new User(username, username, new ArrayList<>());
-            if (Boolean.TRUE.equals(jsecurity.validateToken(jwtToken, username))) {
+            if (Boolean.TRUE.equals(jwtUtil.validateToken(jwtToken, username))) {
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 usernamePasswordAuthenticationToken
@@ -97,18 +98,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
-        JwtResponse jwtResponse = JwtResponse.builder()
-                .status(status)
-                .errorCode(String.valueOf(errorCode)) // Converting int errorCode to String
-                .message(message)
-                .build();
+        ErrorResponse generalResponse = new ErrorResponse(errorCode, message);
 
         try {
-            String jsonResponse = new ObjectMapper().writeValueAsString(jwtResponse);
+            String jsonResponse = gson.toJson(generalResponse);
             response.getWriter().write(jsonResponse);
-            response.getWriter().flush(); // Ensure response is sent immediately
+            response.getWriter().flush(); // Make sure to flush the writer
+            response.getWriter().close(); // Close the writer
         } catch (IOException e) {
-            log.error("ERROR: Failed to write response", e);
+            log.error("ERROR: setResponse", e);
         }
     }
 
