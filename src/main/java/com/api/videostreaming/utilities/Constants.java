@@ -6,10 +6,10 @@ public class Constants {
     /*
      * Generic Constants
     */
-    public static final int SUCCESS_CODE = 200; // success
-    public static final int NO_CONTENT_CODE = 204; // no-content
-    public static final int UNAUTHORIZED_CODE = 401; // invalid token
-    public static final int EXPIRED_JWT_CODE = 403; // token expire
+    public static final int SUCCESS_CODE = 200; 
+    public static final int NO_CONTENT_CODE = 204; 
+    public static final int UNAUTHORIZED_CODE = 401;
+    public static final int EXPIRED_JWT_CODE = 403;
     public static final int BAD_REQUEST_CODE = 400;
     public static final int FORBIDDEN_CODE = 403;
     public static final int NOT_FOUND_CODE = 404;
@@ -40,7 +40,7 @@ public class Constants {
      */
     public static final String REQUEST = "## Request: ";
     public static final String RESPONSE = "-- Response: ";
-    public static final String TOKEN_TYPE = "tokenType"; // -- claims data
+    public static final String TOKEN_TYPE = "tokenType"; 
     public static final String TYPE_REFRESH_TOKEN = "refresh";
     public static final String TYPE_AUTH_TOKEN = "auth";
 

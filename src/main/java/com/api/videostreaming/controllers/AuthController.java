@@ -22,11 +22,8 @@ public class AuthController {
     @PostMapping("/generateToken")
     public ResponseEntity<JwtResponse> generateToken(@RequestBody LoginRequest loginReq) {
         log.info("Login request received for user: {}", loginReq.getUsername());
-
         ResponseEntity<JwtResponse> response = authService.generateToken(loginReq);
-
         log.info("Returning response: {}", response.getBody());
-
         return response;
     }
 }

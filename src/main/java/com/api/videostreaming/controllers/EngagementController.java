@@ -32,12 +32,8 @@ public class EngagementController {
             @RequestParam EngagementType type) {
 
         log.info("Tracking engagement: Video ID={}, User ID={}, Type={}", videoId, userId, type);
-
         engagementTrackingService.trackEngagement(videoId, userId, type);
-
         log.info("Engagement tracked successfully.");
-
-        // Return HTTP 204 No Content (as the service method is void)
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
@@ -50,11 +46,8 @@ public class EngagementController {
     public ResponseEntity<EngagementResponse> getEngagement(@PathVariable Long videoId) {
 
         log.info("Fetching engagement stats for Video ID={}", videoId);
-
         ResponseEntity<EngagementResponse> response = engagementTrackingService.getEngagements(videoId);
-
         log.info("Returning engagement stats: {}", response.getBody());
-
         return response;
     }
 }

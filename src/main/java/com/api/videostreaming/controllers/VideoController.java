@@ -51,11 +51,8 @@ public class VideoController {
             @Valid @RequestBody MetadataRequest request) {
         
         log.info("Received request to update metadata for video ID: {}", videoId);
-        
         ResponseEntity<MetadataResponse> response = videoService.addOrEditVideoMetadata(videoId, request);
-        
-        log.info("Response: Status = {}, Video ID = {}", response.getStatusCode(), videoId);
-        
+        log.info("Response: Status = {}, Video ID = {}", response.getStatusCode(), videoId);      
         return response;
     }
 
@@ -68,11 +65,8 @@ public class VideoController {
     public ResponseEntity<SoftDeleteResponse> softDeleteVideo(@PathVariable Long videoId) {
         
         log.info("Received request to soft delete video ID: {}", videoId);
-        
         ResponseEntity<SoftDeleteResponse> response = videoService.softDeleteVideo(videoId);
-        
-        log.info("Response: Status = {}, Video ID = {}", response.getStatusCode(), videoId);
-        
+        log.info("Response: Status = {}, Video ID = {}", response.getStatusCode(), videoId); 
         return response;
     }
 
@@ -84,11 +78,8 @@ public class VideoController {
     @GetMapping("/{videoId}/play")
     public ResponseEntity<PlayVideoResponse> playVideoContent(@PathVariable Long videoId) {
         log.info("Received request to play video for ID: {}", videoId);
-        
         ResponseEntity<PlayVideoResponse> response = videoService.playVideoContent(videoId);
-        
         log.info("Response: Status = {}, Video ID = {}", response.getStatusCode(), videoId);
-        
         return response;
     }
 
@@ -104,11 +95,8 @@ public class VideoController {
             @RequestParam Integer size) {
         
         log.info("Received search request: phrase='{}', page={}, size={}", searchPhrase, page, size);
-        
         ResponseEntity<Page<SearchVideoResponse>> response = videoService.searchVideos(searchPhrase, page, size);
-        
         log.info("Response: Status = {}, Total Videos Found = {}", response.getStatusCode(), response.getBody().getTotalElements());
-        
         return response;
     }
 
