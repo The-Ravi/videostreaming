@@ -4,8 +4,7 @@ import com.api.videostreaming.enums.EngagementType;
 
 import lombok.*;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

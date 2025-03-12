@@ -2,8 +2,7 @@ package com.api.videostreaming.pojos.responses;
 
 import lombok.*;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

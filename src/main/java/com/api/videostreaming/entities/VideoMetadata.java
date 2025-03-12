@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Data
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
