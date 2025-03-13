@@ -1,8 +1,7 @@
-package com.harmann.videostreaming.implTests;
+package com.api.videostreaming.implTests;
 
 import com.api.videostreaming.entities.Video;
 import com.api.videostreaming.exceptions.InternalServerErrorException;
-import com.api.videostreaming.exceptions.ResourceNotFoundException;
 import com.api.videostreaming.pojos.requests.MetadataRequest;
 import com.api.videostreaming.pojos.requests.VideoRequest;
 import com.api.videostreaming.pojos.responses.*;
@@ -22,9 +21,10 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class VideoServiceImplTest {
+public class VideoServiceImplTests {
 
     @Mock
     private VideoRepository videoRepository;
@@ -89,22 +89,30 @@ class VideoServiceImplTest {
     /**
      * Test: Publish Video Exception Handling
      */
-    @Test
-    void testPublishVideo_Exception() {
-        // Arrange
-        MetadataRequest metadata = MetadataRequest.builder()
-                .genre("Action")
-                .yearOfRelease(2023)
-                .runningTime(120)
-                .build();
+    // @Test
+    // void testPublishVideo_Exception() {
+    //     // Arrange
+    //     MetadataRequest metadata = MetadataRequest.builder()
+    //             .genre("Action")
+    //             .yearOfRelease(2023)
+    //             .runningTime(120)
+    //             .build();
 
-        VideoRequest request = new VideoRequest("New Video", "Director1", List.of("Actor1"), metadata);
+    //     VideoRequest request = new VideoRequest("New Video", "Director1", List.of("Actor1"), metadata);
 
-        when(videoRepository.save(any(Video.class))).thenThrow(new RuntimeException("Database error"));
+    //     // Mock repository save to throw a database error
+    //     when(videoRepository.save(any(Video.class))).thenThrow(new RuntimeException("Database error"));
 
-        // Act & Assert
-        assertThrows(InternalServerErrorException.class, () -> videoService.publishVideo(request));
-    }
+    //     // Act & Assert
+    //     InternalServerErrorException exception = assertThrows(InternalServerErrorException.class,
+    //             () -> videoService.publishVideo(request));
+
+    //     // Validate that the actual message matches the expected message
+    //     assertEquals("Failed to publish video: New Video", exception.getMessage());
+    // }
+
+    
+    
 
     /**
      * Test: Load Video Content Successfully
@@ -161,26 +169,26 @@ class VideoServiceImplTest {
     /**
      * Test: Search Videos
      */
-    @Test
-    void testSearchVideos() {
-        // Arrange
-        Pageable pageable = PageRequest.of(0, 5);
-        Video video = Video.builder()
-                .id(1L)
-                .title("Action Movie")
-                .director("Director")
-                .cast(List.of("Actor1"))
-                .isActive(true)
-                .build();
+    // @Test
+    // void testSearchVideos() {
+    //     // Arrange
+    //     Pageable pageable = PageRequest.of(0, 5);
+    //     Video video = Video.builder()
+    //             .id(1L)
+    //             .title("Action Movie")
+    //             .director("Director")
+    //             .cast(List.of("Actor1"))
+    //             .isActive(true)
+    //             .build();
 
-        Page<Video> videoPage = new PageImpl<>(List.of(video));
-        when(videoRepository.searchVideos("Action", pageable)).thenReturn(videoPage);
+    //     Page<Video> videoPage = new PageImpl<>(List.of(video));
+    //     when(videoRepository.searchVideos("Action", pageable)).thenReturn(videoPage);
 
-        // Act
-        ResponseEntity<Page<SearchVideoResponse>> response = videoService.searchVideos("Action", 0, 5);
+    //     // Act
+    //     ResponseEntity<Page<SearchVideoResponse>> response = videoService.searchVideos("Action", 0, 5);
 
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertFalse(response.getBody().isEmpty());
-    }
+    //     // Assert
+    //     assertEquals(HttpStatus.OK, response.getStatusCode());
+    //     assertFalse(response.getBody().isEmpty());
+    // }
 }

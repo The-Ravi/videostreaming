@@ -1,4 +1,4 @@
-package com.harmann.videostreaming.implTests;
+package com.api.videostreaming.implTests;
 
 
 import com.api.videostreaming.entities.Video;
@@ -22,9 +22,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class EngagementServiceImplTest {
+public class EngagementServiceImplTest {
 
     @Mock
     private VideoRepository videoRepository;

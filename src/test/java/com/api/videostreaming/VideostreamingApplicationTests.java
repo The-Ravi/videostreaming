@@ -1,4 +1,4 @@
-package com.harmann.videostreaming;
+package com.api.videostreaming;
 
 class VideostreamingApplicationTests {
 

@@ -2,7 +2,10 @@ package com.api.videostreaming.serviceImpls;
 
 import com.api.videostreaming.entities.Users;
 import com.api.videostreaming.exceptions.AuthenticationFailedException;
+import com.api.videostreaming.exceptions.ForbiddenException;
+import com.api.videostreaming.exceptions.ResourceNotFoundException;
 import com.api.videostreaming.pojos.requests.LoginRequest;
+import com.api.videostreaming.pojos.requests.RefreshTokenRequest;
 import com.api.videostreaming.pojos.responses.JwtResponse;
 import com.api.videostreaming.repositories.UsersRepository;
 import com.api.videostreaming.securities.JwtUtil;
@@ -13,6 +16,7 @@ import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -67,4 +71,49 @@ public class AuthServiceImpl implements AuthService {
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+    @Override
+    public ResponseEntity<JwtResponse> refreshToken(RefreshTokenRequest refreshTokenReq) {
+        String refreshToken = refreshTokenReq.getRefreshToken();
+
+        log.info("Processing refresh token request.");
+
+        // Validate Refresh Token is not empty
+        if (StringUtils.isBlank(refreshToken)) {
+            log.warn("Refresh token is null or empty.");
+            throw new ResourceNotFoundException(Constants.INVALID_PARAMETERS);
+        }
+
+        // Validate Token Type
+        String tokenType = jwtUtil.getCustomClaimFromToken(refreshToken, Constants.TOKEN_TYPE);
+        if (tokenType == null || !tokenType.equals(Constants.TYPE_REFRESH_TOKEN)) {
+            log.warn("Invalid refresh token provided.");
+            throw new AuthenticationFailedException("Invalid refresh token");
+        }
+
+        // Check if Token is Expired
+        if (Boolean.TRUE.equals(jwtUtil.isTokenExpired(refreshToken))) {
+            log.warn("Refresh token has expired.");
+            throw new ForbiddenException(Constants.JWT_TOKEN_EXPIRED);
+        }
+
+        // Extract Username from Token
+        String userName = jwtUtil.getUsernameFromToken(refreshToken);
+        log.info("Generating new tokens for user: {}", userName);
+
+        // Generate New Access & Refresh Tokens
+        String newJwtToken = jwtUtil.generateToken(userName, Constants.TYPE_AUTH_TOKEN);
+        String newRefreshToken = jwtUtil.generateToken(userName, Constants.TYPE_REFRESH_TOKEN);
+
+        JwtResponse response = JwtResponse.builder()
+                .token(newJwtToken)
+                .refreshToken(newRefreshToken)
+                .message(Constants.TOKEN_GENERATED)
+                .build();
+
+        log.info("New access token & refresh token generated successfully for user: {}", userName);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
 }
