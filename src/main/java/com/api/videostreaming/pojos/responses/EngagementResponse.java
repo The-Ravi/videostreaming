@@ -1,5 +1,7 @@
 package com.api.videostreaming.pojos.responses;
 
+import com.api.videostreaming.enums.EngagementType;
+
 import lombok.*;
 
 @Data
@@ -13,5 +15,6 @@ public class EngagementResponse {
     private int impressions;
     private int views;
     private String message;
+    private EngagementType type;
     private boolean success;
 }

@@ -1,30 +1,29 @@
 package com.api.videostreaming.implTests;
 
-import com.api.videostreaming.entities.Video;
-import com.api.videostreaming.exceptions.InternalServerErrorException;
-import com.api.videostreaming.pojos.requests.MetadataRequest;
-import com.api.videostreaming.pojos.requests.VideoRequest;
-import com.api.videostreaming.pojos.responses.*;
-import com.api.videostreaming.repositories.VideoRepository;
-import com.api.videostreaming.serviceImpls.VideoServiceImpl;
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.List;
-import java.util.Optional;
+import com.api.videostreaming.entities.*;
+import com.api.videostreaming.exceptions.*;
+import com.api.videostreaming.pojos.requests.*;
+import com.api.videostreaming.pojos.responses.*;
+import com.api.videostreaming.repositories.VideoRepository;
+import com.api.videostreaming.serviceImpls.VideoServiceImpl;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import java.util.*;
 
-public class VideoServiceImplTests {
+@ExtendWith(MockitoExtension.class)
+class VideoServiceImplTests {
 
     @Mock
     private VideoRepository videoRepository;
@@ -32,163 +31,175 @@ public class VideoServiceImplTests {
     @InjectMocks
     private VideoServiceImpl videoService;
 
+    private Video video;
+    private VideoRequest videoRequest;
+    private MetadataRequest metadataRequest;
+
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
-
-    /**
-     * Test: Publish a Video Successfully
-     */
-    @Test
-    void testPublishVideoSuccess() {
-        // Arrange
-        MetadataRequest metadata = MetadataRequest.builder()
+        metadataRequest = MetadataRequest.builder()
                 .genre("Action")
-                .yearOfRelease(2023)
+                .synopsis("Great movie")
+                .yearOfRelease(2024)
                 .runningTime(120)
                 .build();
 
-        VideoRequest request = new VideoRequest("New Video", "Director1", List.of("Actor1"), metadata);
+        videoRequest = VideoRequest.builder()
+                .title("Test Video")
+                .director("John Doe")
+                .cast(List.of("Jane Doe", "Bob Smith"))
+                .fileUrl("http://example.com/video.mp4")
+                .format("mp4")
+                .fileSize(5000000L)
+                .resolution(1080)
+                .duration(3600)
+                .metadata(metadataRequest)
+                .build();
 
-        when(videoRepository.existsByTitleIgnoreCase(request.getTitle())).thenReturn(false);
-        when(videoRepository.save(any(Video.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        video = Video.builder()
+                .id(1L)
+                .title(videoRequest.getTitle())
+                .director(videoRequest.getDirector())
+                .cast(videoRequest.getCast())
+                .fileUrl(videoRequest.getFileUrl())
+                .fileSize(videoRequest.getFileSize())
+                .format(videoRequest.getFormat())
+                .resolution(videoRequest.getResolution())
+                .duration(videoRequest.getDuration())
+                .isActive(true)
+                .metadata(VideoMetadata.builder()
+                        .video(video)
+                        .synopsis(metadataRequest.getSynopsis())
+                        .yearOfRelease(metadataRequest.getYearOfRelease())
+                        .genre(metadataRequest.getGenre())
+                        .runningTime(metadataRequest.getRunningTime())
+                        .build())
+                .build();
+    }
 
-        // Act
-        ResponseEntity<PublishVideoResponse> response = videoService.publishVideo(request);
+    @Test
+    void shouldPublishVideoSuccessfully() {
+        when(videoRepository.existsByTitleIgnoreCase(videoRequest.getTitle())).thenReturn(false);
+        when(videoRepository.save(any(Video.class))).thenReturn(video);
 
-        // Assert
+        ResponseEntity<PublishVideoResponse> response = videoService.publishVideo(videoRequest);
+
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("New Video", response.getBody().getTitle());
+        assertEquals("Video successfully published", response.getBody().getMessage());
+
+        verify(videoRepository, times(1)).save(any(Video.class));
     }
 
-    /**
-     * Test: Publish Video that Already Exists
-     */
     @Test
-    void testPublishVideo_AlreadyExists() {
-        // Arrange
-        MetadataRequest metadata = MetadataRequest.builder()
-                .genre("Action")
-                .yearOfRelease(2023)
-                .runningTime(120)
-                .build();
+    void shouldReturnConflictWhenVideoAlreadyExists() {
+        when(videoRepository.existsByTitleIgnoreCase(videoRequest.getTitle())).thenReturn(true);
 
-        VideoRequest request = new VideoRequest("Existing Video", "Director1", List.of("Actor1"), metadata);
+        ResponseEntity<PublishVideoResponse> response = videoService.publishVideo(videoRequest);
 
-        when(videoRepository.existsByTitleIgnoreCase(request.getTitle())).thenReturn(true);
-
-        // Act
-        ResponseEntity<PublishVideoResponse> response = videoService.publishVideo(request);
-
-        // Assert
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+        verify(videoRepository, never()).save(any(Video.class));
     }
 
-    /**
-     * Test: Publish Video Exception Handling
-     */
-    // @Test
-    // void testPublishVideo_Exception() {
-    //     // Arrange
-    //     MetadataRequest metadata = MetadataRequest.builder()
-    //             .genre("Action")
-    //             .yearOfRelease(2023)
-    //             .runningTime(120)
-    //             .build();
+    @Test
+    void shouldThrowExceptionWhenPublishingFails() {
+        when(videoRepository.save(any(Video.class))).thenThrow(new RuntimeException("Database Error"));
 
-    //     VideoRequest request = new VideoRequest("New Video", "Director1", List.of("Actor1"), metadata);
+        Exception exception = assertThrows(InternalServerErrorException.class, () -> videoService.publishVideo(videoRequest));
+        assertEquals("Failed to publish video: Test Video", exception.getMessage());
+    }
 
-    //     // Mock repository save to throw a database error
-    //     when(videoRepository.save(any(Video.class))).thenThrow(new RuntimeException("Database error"));
+    @Test
+    void testSoftDeleteVideo_Success() {
+        when(videoRepository.findById(1L)).thenReturn(Optional.of(video));
+        when(videoRepository.save(any(Video.class))).thenReturn(video);
 
-    //     // Act & Assert
-    //     InternalServerErrorException exception = assertThrows(InternalServerErrorException.class,
-    //             () -> videoService.publishVideo(request));
+        ResponseEntity<SoftDeleteResponse> response = videoService.softDeleteVideo(1L);
 
-    //     // Validate that the actual message matches the expected message
-    //     assertEquals("Failed to publish video: New Video", exception.getMessage());
-    // }
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertFalse(video.isActive());
+    }
 
-    
-    
+    @Test
+    void testSoftDeleteVideo_NotFound() {
+        when(videoRepository.findById(2L)).thenReturn(Optional.empty());
 
-    /**
-     * Test: Load Video Content Successfully
-     */
+        ResponseEntity<SoftDeleteResponse> response = videoService.softDeleteVideo(2L);
+
+        // Assert that the response status is 404 NOT FOUND
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Video not found", response.getBody().getMessage());
+        assertFalse(response.getBody().isSuccess());
+
+        verify(videoRepository, times(1)).findById(2L);
+        verify(videoRepository, never()).save(any(Video.class));
+    }
+
     @Test
     void testLoadVideoContent_Success() {
-        // Arrange
-        Video video = Video.builder()
-                .id(1L)
-                .title("Test Video")
-                .director("Director")
-                .cast(List.of("Actor1"))
-                .fileUrl("http://test-video.mp4")
-                .isActive(true)
-                .build();
-
         when(videoRepository.findById(1L)).thenReturn(Optional.of(video));
 
-        // Act
         ResponseEntity<LoadVideoResponse> response = videoService.loadVideoContent(1L);
 
-        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals("http://test-video.mp4", response.getBody().getFileUrl());
+        assertEquals("Test Video", response.getBody().getTitle());
     }
 
-    /**
-     * Test: Play Video Successfully
-     */
+    @Test
+    void testLoadVideoContent_NotFound() {
+        when(videoRepository.findById(2L)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(ResourceNotFoundException.class, () -> videoService.loadVideoContent(2L));
+        assertEquals("Video not found", exception.getMessage());
+    }
+
+    @Test
+    void testSearchVideos_Success() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Video> videoPage = new PageImpl<>(List.of(video), pageable, 1);
+
+        when(videoRepository.searchVideos("Action", pageable)).thenReturn(videoPage);
+
+        ResponseEntity<Page<SearchVideoResponse>> response = videoService.searchVideos("Action", 0, 10);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(1, response.getBody().getTotalElements());
+    }
+
+    @Test
+    void testSearchVideos_NoResults() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Video> emptyPage = Page.empty();
+
+        when(videoRepository.searchVideos("Unknown", pageable)).thenReturn(emptyPage);
+
+        ResponseEntity<Page<SearchVideoResponse>> response = videoService.searchVideos("Unknown", 0, 10);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
     @Test
     void testPlayVideoContent_Success() {
-        // Arrange
-        Video video = Video.builder()
-                .id(1L)
-                .title("Test Video")
-                .director("Director")
-                .cast(List.of("Actor1"))
-                .fileUrl("http://test-video.mp4")
-                .isActive(true)
-                .build();
-
         when(videoRepository.findById(1L)).thenReturn(Optional.of(video));
 
-        // Act
         ResponseEntity<PlayVideoResponse> response = videoService.playVideoContent(1L);
 
-        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals("http://test-video.mp4", response.getBody().getFileUrl());
+        assertEquals("http://example.com/video.mp4", response.getBody().getFileUrl());
     }
 
-    /**
-     * Test: Search Videos
-     */
-    // @Test
-    // void testSearchVideos() {
-    //     // Arrange
-    //     Pageable pageable = PageRequest.of(0, 5);
-    //     Video video = Video.builder()
-    //             .id(1L)
-    //             .title("Action Movie")
-    //             .director("Director")
-    //             .cast(List.of("Actor1"))
-    //             .isActive(true)
-    //             .build();
+    @Test
+    void testPlayVideoContent_FileUrlMissing() {
+        video.setFileUrl(null);
+        when(videoRepository.findById(1L)).thenReturn(Optional.of(video));
 
-    //     Page<Video> videoPage = new PageImpl<>(List.of(video));
-    //     when(videoRepository.searchVideos("Action", pageable)).thenReturn(videoPage);
+        InternalServerErrorException exception = assertThrows(InternalServerErrorException.class, () -> 
+            videoService.playVideoContent(1L)
+        );
 
-    //     // Act
-    //     ResponseEntity<Page<SearchVideoResponse>> response = videoService.searchVideos("Action", 0, 5);
+        assertEquals("Video file URL is missing", exception.getMessage());
 
-    //     // Assert
-    //     assertEquals(HttpStatus.OK, response.getStatusCode());
-    //     assertFalse(response.getBody().isEmpty());
-    // }
+        verify(videoRepository, times(1)).findById(1L);
+    }
 }

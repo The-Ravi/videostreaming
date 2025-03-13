@@ -30,20 +30,29 @@ public class EngagementServiceImpl implements EngagementService {
 
     @Override
     @Transactional
-    public void trackEngagement(Long videoId, Long userId, EngagementType type) {
+    public ResponseEntity<EngagementResponse> trackEngagement(Long videoId, Long userId, EngagementType type) {
         log.info("Processing engagement tracking for Video ID={}, User ID={}, Type={}", videoId, userId, type);
-
+    
         Video video = videoRepository.findById(videoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Video not found for ID: " + videoId));
-
+    
         if (useKafka) {
-            // Future Kafka Implementation
+            // Simulate sending event to Kafka
             log.info("Engagement event sent to Kafka for Video ID: {}, User ID: {}, Type: {}", videoId, userId, type);
+    
+            EngagementResponse response = EngagementResponse.builder()
+                    .success(true)
+                    .message("Engagement event sent to Kafka")
+                    .videoId(videoId)
+                    .userId(userId)
+                    .type(type)
+                    .build();
+    
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
         } else {
             // Fetch existing engagement or create a new one
-            VideoEngagements engagement = engagementRepository.findByVideoAndUserId(video, userId)
-                    .orElse(null);
-
+            VideoEngagements engagement = engagementRepository.findByVideoAndUserId(video, userId).orElse(null);
+    
             if (engagement == null) {
                 engagement = VideoEngagements.builder()
                         .video(video)
@@ -61,32 +70,46 @@ public class EngagementServiceImpl implements EngagementService {
                 log.info("Updated engagement for Video ID={} and User ID={} -> Impressions={}, Views={}",
                         videoId, userId, engagement.getImpressions(), engagement.getViews());
             }
-
+    
             engagementRepository.save(engagement);
             log.info("Engagement recorded in DB for Video ID={}, User ID={}, Type={}", videoId, userId, type);
+    
+            EngagementResponse response = EngagementResponse.builder()
+                    .success(true)
+                    .message("Engagement recorded successfully")
+                    .videoId(videoId)
+                    .userId(userId)
+                    .type(type)
+                    .build();
+    
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         }
     }
+    
 
     @Override
     public ResponseEntity<EngagementResponse> getEngagements(Long videoId) {
         log.info("Fetching engagement stats for Video ID={}", videoId);
-
+    
         Video video = videoRepository.findById(videoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Video not found for ID: " + videoId));
-
-        int totalImpressions = engagementRepository.countByVideoAndType(video, EngagementType.IMPRESSION);
-        int totalViews = engagementRepository.countByVideoAndType(video, EngagementType.VIEW);
-
+    
+        // Fetch impressions & views directly from the database
+        VideoEngagements engagement = engagementRepository.findByVideoId(videoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Engagement data not found for Video ID: " + videoId));
+    
         EngagementResponse response = EngagementResponse.builder()
                 .videoId(video.getId())
                 .title(video.getTitle())
-                .impressions(totalImpressions)
-                .views(totalViews)
+                .impressions(engagement.getImpressions()) // Fetch actual impression count
+                .views(engagement.getViews()) // Fetch actual view count
                 .message("Engagement statistics retrieved successfully")
                 .success(true)
                 .build();
-
-        log.info("Returning engagement stats for Video ID={} -> Impressions={}, Views={}", videoId, totalImpressions, totalViews);
+    
+        log.info("Returning engagement stats for Video ID={} -> Impressions={}, Views={}",
+                videoId, engagement.getImpressions(), engagement.getViews());
+    
         return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
+    }    
 }

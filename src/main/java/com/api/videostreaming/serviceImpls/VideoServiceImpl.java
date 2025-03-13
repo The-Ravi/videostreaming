@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.api.videostreaming.controllers.VideoController;
 import com.api.videostreaming.entities.Video;
 import com.api.videostreaming.entities.VideoMetadata;
 import com.api.videostreaming.exceptions.InternalServerErrorException;
@@ -31,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class VideoServiceImpl implements VideoService {
-    private static final Logger log = (Logger) LoggerFactory.getLogger(VideoController.class);
+    private static final Logger log = (Logger) LoggerFactory.getLogger(VideoService.class);
     private final VideoRepository videoRepository;
 
     @Override
@@ -50,6 +49,11 @@ public class VideoServiceImpl implements VideoService {
                     .title(request.getTitle())
                     .director(request.getDirector())
                     .cast(request.getCast())
+                    .fileUrl(request.getFileUrl())  // Ensure this field is populated
+                    .fileSize(request.getFileSize())  // Ensure this field is not null
+                    .format(request.getFormat())
+                    .resolution(request.getResolution())
+                    .duration(request.getDuration())
                     .isActive(true)
                     .build();
 
@@ -163,12 +167,12 @@ public class VideoServiceImpl implements VideoService {
     
         // Fetch video directly from VideoRepository
         Video video = videoRepository.findById(videoId)
-                .orElseThrow(() -> new ResourceNotFoundException("Video not found for ID: " + videoId));
+                .orElseThrow(() -> new ResourceNotFoundException("Video not found"));
     
         // Check if file URL is missing (Internal Server Error case)
         if (video.getFileUrl() == null || video.getFileUrl().isEmpty()) {
             log.error("Internal Server Error: Video file URL is missing for Video ID: {}", videoId);
-            throw new InternalServerErrorException("Video file URL is missing :" + videoId);
+            throw new InternalServerErrorException("Video file URL is missing");
         }
     
         // Build response with metadata and video file details
@@ -197,12 +201,12 @@ public class VideoServiceImpl implements VideoService {
 
         // Fetch the video directly from VideoRepository
         Video video = videoRepository.findById(videoId)
-                .orElseThrow(() -> new ResourceNotFoundException("Video not found for ID: " + videoId));
+                .orElseThrow(() -> new ResourceNotFoundException("Video not found"));
 
         // Check if video has a valid file URL
         if (video.getFileUrl() == null || video.getFileUrl().isEmpty()) {
             log.error("Internal Server Error: Video file URL is missing for Video ID: {}", videoId);
-            throw new InternalServerErrorException("Video file URL is missing " + videoId);
+            throw new InternalServerErrorException("Video file URL is missing");
         }
 
         // Build response with video streaming details
@@ -261,7 +265,6 @@ public class VideoServiceImpl implements VideoService {
 
         // Fetch paginated videos
         Page<Video> videoPage = videoRepository.findAll(pageable);
-
         if (videoPage.isEmpty()) {
             log.warn("No videos found in the database");
              throw new ResourceNotFoundException("No videos found");

@@ -27,11 +27,12 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
 
 
     @Query("SELECT v FROM Video v " +
-           "JOIN v.metadata m " +
-           "WHERE LOWER(v.title) LIKE LOWER(CONCAT('%', :searchPhrase, '%')) " +
-           "OR LOWER(v.director) LIKE LOWER(CONCAT('%', :searchPhrase, '%')) " +
-           "OR LOWER(m.genre) LIKE LOWER(CONCAT('%', :searchPhrase, '%')) " +
-           "OR EXISTS (SELECT 1 FROM v.cast c WHERE LOWER(c) LIKE LOWER(CONCAT('%', :searchPhrase, '%')))")
+       "JOIN v.metadata m " +
+       "LEFT JOIN v.cast c " +  // Use LEFT JOIN for cast to prevent filtering videos without cast members
+       "WHERE LOWER(v.title) LIKE LOWER(CONCAT('%', :searchPhrase, '%')) " +
+       "OR LOWER(v.director) LIKE LOWER(CONCAT('%', :searchPhrase, '%')) " +
+       "OR LOWER(m.genre) LIKE LOWER(CONCAT('%', :searchPhrase, '%')) " +
+       "OR LOWER(c) LIKE LOWER(CONCAT('%', :searchPhrase, '%'))")
     Page<Video> searchVideos(String searchPhrase, Pageable pageable);
 
     Page<Video> findAll(Pageable pageable);

@@ -45,6 +45,6 @@ public class Video {
     private Integer duration;  // Duration in seconds
 
     @JsonIgnore
-    @OneToOne(mappedBy = "video", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToOne(mappedBy = "video", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private VideoMetadata metadata;
 }

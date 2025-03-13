@@ -15,7 +15,7 @@ public class PermittedEndpointsConfig {
         new AntPathRequestMatcher("/swagger-ui/**"),
         new AntPathRequestMatcher("/swagger-resources/**"),
         new AntPathRequestMatcher("/webjars/**"),
-        new AntPathRequestMatcher(VERSION + "/admin/**") // Ensure VERSION is correctly replaced
+        new AntPathRequestMatcher(VERSION + "/auth/**") // Ensure VERSION is correctly replaced
     };
 
     public static RequestMatcher[] getPermittedMatchers() {
