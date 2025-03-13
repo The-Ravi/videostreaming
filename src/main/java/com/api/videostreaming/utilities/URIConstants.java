@@ -11,7 +11,7 @@ public class URIConstants {
     /*
      * ADMIN CONTROLLER
      */
-    public static final String ADMIN_BASE_URL = "/admin";
+    public static final String AUTH_BASE_URL = "/auth";
     public static final String GET_TOKEN = "/get-token";
     public static final String REFRESH_TOKEN = "/token-refresh";
 

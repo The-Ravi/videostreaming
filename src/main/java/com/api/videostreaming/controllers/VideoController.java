@@ -18,10 +18,12 @@ import com.api.videostreaming.pojos.responses.PublishVideoResponse;
 import com.api.videostreaming.pojos.responses.SearchVideoResponse;
 import com.api.videostreaming.pojos.responses.SoftDeleteResponse;
 import com.api.videostreaming.services.VideoService;
+import com.api.videostreaming.utilities.URIConstants;
+
 import org.springframework.data.domain.Page;
 
 @RestController
-@RequestMapping("/videos")
+@RequestMapping(URIConstants.API_VERSION + URIConstants.VIDEO_BASE_URL)
 @RequiredArgsConstructor
 public class VideoController {
     private static final Logger log = (Logger) LoggerFactory.getLogger(VideoController.class);

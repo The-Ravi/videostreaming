@@ -5,6 +5,8 @@ import com.api.videostreaming.pojos.requests.LoginRequest;
 import com.api.videostreaming.pojos.requests.RefreshTokenRequest;
 import com.api.videostreaming.pojos.responses.JwtResponse;
 import com.api.videostreaming.services.AuthService;
+import com.api.videostreaming.utilities.URIConstants;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping(URIConstants.API_VERSION + URIConstants.AUTH_BASE_URL)
 @RequiredArgsConstructor
 @Slf4j
 public class AuthController {

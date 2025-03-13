@@ -3,6 +3,7 @@ package com.api.videostreaming.controllers;
 import com.api.videostreaming.enums.EngagementType;
 import com.api.videostreaming.pojos.responses.EngagementResponse;
 import com.api.videostreaming.services.EngagementService;
+import com.api.videostreaming.utilities.URIConstants;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -13,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/engagements")
+@RequestMapping(URIConstants.API_VERSION + URIConstants.ES_BASE_URL)
 @RequiredArgsConstructor
 @Slf4j
 public class EngagementController {

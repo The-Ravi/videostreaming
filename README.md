@@ -55,7 +55,7 @@ This repository contains a Video Engagement Statistics System built using Spring
         - Error Handling: We centralized error handling through a custom exception (InternalServerErrorException) to maintain consistent error responses across all endpoints.
 
         - Builder Pattern: We used builder design pattern for better object management and handling and creation in almost all of the entities, pojos,request,responses.
-        
+
     2. **Engagement Statistics Tracking**
         - Kafka Integration (Optional): We designed the system to optionally support Kafka for handling engagement tracking messages. Kafka is a powerful distributed streaming platform, allowing the system to scale efficiently and process large amounts of engagement data asynchronously. If Kafka is not used, the system stores engagement data directly in the database.
 
@@ -176,8 +176,8 @@ This repository contains a Video Engagement Statistics System built using Spring
    ```
 
 2. **Access the APIs**
-   - The application will be running at `http://localhost:8080`.
-   - API documentation can be accessed at `http://localhost:8080/swagger-ui/index.html#`.
+   - The application will be running at `http://localhost:8070`.
+   - API documentation can be accessed at `http://localhost:8070/swagger-ui/index.html#`.
 
 ## Contact Information
 
